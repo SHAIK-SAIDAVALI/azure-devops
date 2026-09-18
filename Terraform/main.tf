@@ -1,27 +1,26 @@
-
-resource "azurerm_resource_group" "example" {
-  name     = "example-rg"
-  location = "westus"
+resource "azurerm_resource_group" "demo" {
+  name     = "${var.prefix}-resources"
+  location = var.location
 }
 
-resource "azurerm_virtual_network" "example" {
-  name                = "examplevnet"
+resource "azurerm_virtual_network" "demo" {
+  name                = "${var.prefix}-network"
   address_space       = ["10.0.0.0/16"]
-  location            = azurerm_resource_group.example.location
-  resource_group_name = azurerm_resource_group.example.name
+  location            = azurerm_resource_group.demo.location
+  resource_group_name = azurerm_resource_group.demo.name
 }
 
 resource "azurerm_subnet" "example" {
-  name                 = "internal"
-  resource_group_name  = azurerm_resource_group.example.name
-  virtual_network_name = azurerm_virtual_network.example.name
+  name                 = "${var.prefix}-internal"
+  resource_group_name  = azurerm_resource_group.demo.name
+  virtual_network_name = azurerm_virtual_network.demo.name
   address_prefixes     = ["10.0.2.0/24"]
 }
 
 resource "azurerm_network_interface" "example" {
-  name                = "exampleni"
-  location            = azurerm_resource_group.example.location
-  resource_group_name = azurerm_resource_group.example.name
+  name                = "${var.prefix}-nic"
+  location            = azurerm_resource_group.demo.location
+  resource_group_name = azurerm_resource_group.demo.name
 
   ip_configuration {
     name                          = "internal"
@@ -31,12 +30,12 @@ resource "azurerm_network_interface" "example" {
 }
 
 resource "azurerm_linux_virtual_machine" "example" {
-  name                            = "examplevm"
-  resource_group_name             = azurerm_resource_group.example.name
-  location                        = azurerm_resource_group.example.location
-  size                            = "Standard_D4_v5"
+  name                            = "${var.prefix}-linux"
+  resource_group_name             = azurerm_resource_group.demo.name
+  location                        = azurerm_resource_group.demo.location
+  size                            = "Standard_B1s"
   admin_username                  = "adminuser"
-  admin_password                  = "P@$$w0rd1234!"
+  admin_password                  = var.admin_password
   disable_password_authentication = false
   network_interface_ids = [
     azurerm_network_interface.example.id,
@@ -54,15 +53,3 @@ resource "azurerm_linux_virtual_machine" "example" {
     version   = "latest"
   }
 }
-
-resource "azurerm_automanage_configuration" "example" {
-  name                = "exampleconfig"
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
-}
-
-resource "azurerm_virtual_machine_automanage_configuration_assignment" "example" {
-  virtual_machine_id = azurerm_linux_virtual_machine.example.id
-  configuration_id   = azurerm_automanage_configuration.example.id
-}
-
