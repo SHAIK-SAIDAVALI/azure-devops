@@ -2,7 +2,7 @@ resource "azurerm_resource_group" "demo" {
   name     = "${var.prefix}-resources"
   location = var.location
 }
-
+### V-NET
 resource "azurerm_virtual_network" "demo" {
   name                = "${var.prefix}-network"
   address_space       = ["10.0.0.0/16"]
